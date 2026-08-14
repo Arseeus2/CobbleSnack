@@ -1,0 +1,72 @@
+name: Bug report
+description: Report an incorrect result, missing form, visual problem, crash, or compatibility issue.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve CobbleSnack. Please reproduce the issue once, then attach the session log before restarting Minecraft.
+
+  - type: input
+    id: version
+    attributes:
+      label: CobbleSnack version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Modpack or server
+      description: Include the modpack name and version, or say standalone Cobblemon.
+      placeholder: "Cobblemon Official Modpack, Cobbleverse, or standalone Cobblemon"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include the Pokémon, form, biome, structure, ingredients, buttons, or screen involved.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can it be repeated?
+      placeholder: |
+        1. Open CobbleSnack with K
+        2. Select ...
+        3. Click ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Diagnostic log
+      description: Drag config/cobblesnack/diagnostics/session.log into this box. You may also attach screenshots.
+      placeholder: Drag session.log here after reproducing the problem.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Quick checks
+      options:
+        - label: I reproduced this with the latest CobbleSnack release.
+          required: true
+        - label: I copied the log before restarting Minecraft.
+          required: true

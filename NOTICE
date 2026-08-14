@@ -1,0 +1,13 @@
+CobbleSnack
+Copyright (c) 2026 Arseeus2
+
+CobbleSnack's source code is licensed under the MIT License. See LICENSE.
+
+The bundled E19-style minimap sprites are derived from resources distributed
+under the Mozilla Public License 2.0. Their license and attribution notice are
+included at:
+
+src/main/resources/META-INF/licenses/cobblesnack/LICENSE_E19_MPL-2.0.txt
+src/main/resources/META-INF/licenses/cobblesnack/NOTICE_E19_MINIMAP_ICONS.txt
+
+Those sprite files remain subject to their original license.

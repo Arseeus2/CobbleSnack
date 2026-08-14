@@ -1,0 +1,16 @@
+Bundled minimap-style Pokémon sprites
+======================================
+
+CobbleSnack includes the regular Pokémon sprites from:
+
+E19 - Cobblemon Minimap Icons
+Version: 1.21.1-1.4.4
+Resource-pack author: Emery319
+Original Cobblemon icons: MBCMechachu
+Source: https://www.curseforge.com/minecraft/texture-packs/e19-cobblemon-minimap-icons
+
+Only the regular sprite set is bundled. The sprite PNG files are unmodified and
+retain their original paths under assets/xaerominimap/entity/icon/sprite/regular/.
+
+These sprite files are distributed under the Mozilla Public License 2.0. See
+LICENSE_E19_MPL-2.0.txt included beside this notice.

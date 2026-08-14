@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "cobblesnack",
+  "version": "${version}",
+  "name": "CobbleSnack",
+  "description": "Client-side Poké Snack spawn calculator and optimizer for Cobblemon/Cobbleverse.",
+  "authors": [
+    "Arseeus2"
+  ],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.cobblesnack.client.CobbleSnackClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "cobblemon": ">=1.7.0",
+    "toms_storage": "*"
+  }
+}
