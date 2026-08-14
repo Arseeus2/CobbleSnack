@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public final class SessionDiagnostics {
-   private static final String VERSION = "1.0.0";
+   private static final String VERSION = "1.0.1";
    private static final long MAX_BYTES = 4194304L;
    private static final int TICKS_PER_SAMPLE = 1200;
    private static final Object LOCK = new Object();
@@ -46,7 +46,7 @@ public final class SessionDiagnostics {
                Files.createDirectories(var3.getParent());
                Files.writeString(var3, "", StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
                appendRaw("CobbleSnack temporary session diagnostics\n");
-               appendRaw("Version: 1.0.0\n");
+               appendRaw("Version: 1.0.1\n");
                appendRaw("Started UTC: " + Instant.now() + "\n");
                appendRaw("Purpose: cache/load timing, installed data audit, spawn-route audit and JVM memory trend.\n");
                appendRaw("This file is overwritten every Minecraft launch and capped at 4 MiB.\n\n");

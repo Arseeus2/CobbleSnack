@@ -11,6 +11,7 @@ import dev.cobblesnack.calc.Seasoning;
 import dev.cobblesnack.calc.SpawnCalculator;
 import dev.cobblesnack.calc.SpawnEnvironmentProfile;
 import dev.cobblesnack.calc.StructureEstimateOptimizer;
+import dev.cobblesnack.calc.StructureResultPolicy;
 import dev.cobblesnack.calc.StructureSelectorPolicy;
 import dev.cobblesnack.calc.StructureSnackAdvisor;
 import dev.cobblesnack.data.DataIndex;
@@ -996,19 +997,19 @@ public final class SnackCalculatorScreen extends Screen {
       return "ROUTE|" + var13 + "|" + String.join(",", var4) + "|" + String.join(",", var5) + "|" + String.join(",", var6);
    }
 
-   private List<SpawnEntry> selectedStructureOnlyRoutes() {
+   private List<SpawnEntry> selectedStructureFallbackRoutes(boolean var1) {
       if (this.selectedPokemon == null) {
          return List.of();
       }
 
-      List<SpawnEntry> var1 = DataIndex.get()
+      List<SpawnEntry> var2 = DataIndex.get()
          .spawnsForSpecies(this.selectedPokemon.key(), this.selectedSpawnFilter())
          .stream()
          .filter(var0 -> !var0.isFishingRoute())
          .toList();
-      return !var1.isEmpty() && !var1.stream().anyMatch(var0 -> !var0.hasStructureConstraint())
-         ? var1.stream().filter(SpawnEntry::hasStructureConstraint).filter(StructureSelectorPolicy::routeIsUsable).toList()
-         : List.of();
+      List<SpawnEntry> var3 = var2.stream().filter(SpawnEntry::hasStructureConstraint).filter(StructureSelectorPolicy::routeIsUsable).toList();
+      boolean var4 = !var2.isEmpty() && var2.stream().allMatch(SpawnEntry::hasStructureConstraint);
+      return StructureResultPolicy.shouldPresent(var1, var4, !var3.isEmpty()) ? var3 : List.of();
    }
 
    private static String structureDestination(List<SpawnEntry> var0) {
@@ -2055,10 +2056,10 @@ public final class SnackCalculatorScreen extends Screen {
                                        this.selectedBiomeId = null;
                                        this.resultSeasoningSignature = List.of();
                                        var11x.add("TARGET|" + var3);
-                                       List<SpawnEntry> var13 = this.selectedStructureOnlyRoutes();
+                                       boolean var15 = var10x != null && var10x.available();
+                                       List<SpawnEntry> var13 = this.selectedStructureFallbackRoutes(var15);
                                        if (!var13.isEmpty()) {
                                           SpawnEntry var14 = (SpawnEntry)var13.get(0);
-                                          boolean var15 = var10x != null && var10x.available();
                                           List<Seasoning> var16 = var15 ? var10x.recipe() : StructureSnackAdvisor.recommend(this.selectedPokemon, var13, var6, var8, var9);
 
                                           for (int var17 = 0; var17 < Math.min(this.selected.length, var16.size()); var17++) {

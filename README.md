@@ -63,7 +63,7 @@ On Linux or macOS:
 bash ./gradlew build
 ```
 
-The finished mod is written to `build/libs/cobblesnack-1.0.0.jar`. A Java 21 JDK is required.
+The finished mod is written to `build/libs/cobblesnack-1.0.1.jar`. A Java 21 JDK is required.
 
 ## License
 

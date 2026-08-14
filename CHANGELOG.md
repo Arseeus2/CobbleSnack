@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- Fixed valid structure results being hidden when a Pokémon also had an unavailable ordinary route.
+- Restored calculations for Spiritomb, Golett, Golurk, Articuno, Zapdos, and Moltres in affected Cobbleverse data.
+
 ## 1.0.0
 
 - First public release.
