@@ -21,6 +21,13 @@ class DataIndexSpawnVariantTest {
       assertEquals("Original", component(variant, "label"));
    }
 
+   @Test
+   void uncatchableRemainsSpawnMetadataInsteadOfBecomingAForm() throws Exception {
+      Object variant = spawnVariant("unown character=t uncatchable shiny=no");
+
+      assertEquals("T", component(variant, "label"));
+   }
+
    private static Object spawnVariant(String expression) throws Exception {
       Method method = DataIndex.class.getDeclaredMethod("spawnVariant", SpeciesInfo.class, String.class);
       method.setAccessible(true);

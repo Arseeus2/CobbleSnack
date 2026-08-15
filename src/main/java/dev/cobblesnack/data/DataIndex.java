@@ -63,6 +63,7 @@ public final class DataIndex {
       "moves",
       "moveset",
       "status",
+      "uncatchable",
       "nickname",
       "helditem"
    );
@@ -294,14 +295,16 @@ public final class DataIndex {
             if (!var5.isBlank()) {
                int var10 = var5.indexOf(61);
                if (var10 < 0) {
-                  String var19 = simplifyVariantAtom(var5);
-                  if (!var19.isBlank() && !var7.contains(var19)) {
-                     var7.add(var19);
-                  }
+                  if (!NON_FORM_POKEMON_PROPERTIES.contains(SpeciesInfo.normalize(var5))) {
+                     String var19 = simplifyVariantAtom(var5);
+                     if (!var19.isBlank() && !var7.contains(var19)) {
+                        var7.add(var19);
+                     }
 
-                  String var17;
-                  if (!(var17 = prettyVariantWord(var5)).isBlank() && !var8.contains(var17)) {
-                     var8.add(var17);
+                     String var17;
+                     if (!(var17 = prettyVariantWord(var5)).isBlank() && !var8.contains(var17)) {
+                        var8.add(var17);
+                     }
                   }
                } else {
                   String var4 = var5.substring(0, var10);
