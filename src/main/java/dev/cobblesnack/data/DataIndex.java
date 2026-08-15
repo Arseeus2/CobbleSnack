@@ -50,7 +50,21 @@ public final class DataIndex {
    private volatile Map<String, List<DataIndex.FormSpawnOption>> spawnFormOptionsBySpecies;
    private static final String BASE_FORM_KEY = "__base__";
    private static final Set<String> NON_FORM_POKEMON_PROPERTIES = Set.of(
-      "level", "shiny", "nature", "ability", "friendship", "pokeball", "ball", "ivs", "evs", "moves", "moveset", "status", "nickname", "helditem"
+      "level",
+      "shiny",
+      "nature",
+      "ability",
+      "friendship",
+      "pokeball",
+      "ball",
+      "ivs",
+      "minperfectivs",
+      "evs",
+      "moves",
+      "moveset",
+      "status",
+      "nickname",
+      "helditem"
    );
 
    public static DataIndex get() {
