@@ -1,13 +1,13 @@
 # CobbleSnack
 
-CobbleSnack is a client-side Poké Snack calculator for Cobblemon. It reads the Pokémon, forms, spawn routes, biomes, structures, and seasonings available in the world or server you join, then helps you choose a useful snack and location.
+CobbleSnack is a client-side Poké Snack calculator for Cobblemon. It reads the Pokémon, forms, spawn routes, biomes, structures, and seasonings available in your installed files, then helps you choose a useful snack and location.
 
 Press **K** in game to open CobbleSnack. The key can be changed in Minecraft's Controls menu.
 
 ## What it does
 
 - Calculates a Poké Snack and an accessible location for the selected Pokémon and form.
-- Uses the spawn data supplied by the current modpack, world, data packs, and server instead of relying on one fixed Pokémon list.
+- Uses spawn data from currently installed mods, enabled combined resource/data packs, configured data packs, and resources downloaded by AutoModpack instead of relying on one fixed Pokémon list.
 - Handles ordinary biome routes, structure routes, water routes, and fishing-only routes.
 - Shows form-specific sprites and lets compatible sprites cycle in the Pokémon browser.
 - Filters out Pokémon, forms, biomes, and structures that are not available in the current environment.
@@ -17,7 +17,11 @@ Press **K** in game to open CobbleSnack. The key can be changed in Minecraft's C
 - Includes optional integration with Tom's Simple Storage terminals.
 - Writes a detailed diagnostic report for troubleshooting.
 
-CobbleSnack does not change Pokémon spawns or Poké Snack mechanics. It explains and calculates from the data that is already loaded.
+CobbleSnack does not change Pokémon spawns or Poké Snack mechanics. It explains and calculates from the data available in your Minecraft profile.
+
+## Server data and accuracy
+
+CobbleSnack can only read resources that are installed or downloaded on your client. This includes compatible resources downloaded by AutoModpack. It cannot read private server-only data packs that the server has not provided to your Minecraft profile, so routes found only in private server files may be missing from its results.
 
 ## Requirements
 
