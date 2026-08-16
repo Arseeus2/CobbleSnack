@@ -112,6 +112,13 @@ public final class BiomeMatcher {
          : true;
    }
 
+   public boolean isOceanBiome() {
+      String var1 = this.biomeId.getPath().toLowerCase(Locale.ROOT);
+      return var1.contains("ocean")
+         || this.matchesSelector("#minecraft:is_ocean")
+         || this.matchesSelector("#cobblemon:is_ocean");
+   }
+
    public boolean isAquaticFriendly() {
       if (this.isAquaticDominant()) {
          return true;
@@ -145,5 +152,20 @@ public final class BiomeMatcher {
       }
 
       return this.matchesSelector("#minecraft:is_nether") || this.matchesSelector("#cobblemon:is_nether") || this.matchesSelector("#cobblemon:is_volcanic");
+   }
+
+   public boolean isCaveLike() {
+      String var1 = this.biomeId.getPath().toLowerCase(Locale.ROOT);
+
+      for (String var3 : List.of("cave", "cavern", "grotto", "underground", "subterranean", "deep_dark", "deepdark")) {
+         if (var1.contains(var3)) {
+            return true;
+         }
+      }
+
+      return this.matchesSelector("#c:is_cave")
+         || this.matchesSelector("#forge:is_cave")
+         || this.matchesSelector("#minecraft:is_cave")
+         || this.matchesSelector("#cobblemon:is_cave");
    }
 }

@@ -1109,13 +1109,19 @@ public final class SnackCalculatorScreen extends Screen {
       }
 
       LinkedHashMap<String, Block> var3 = new LinkedHashMap<>();
-      boolean var4 = false;
+      LinkedHashSet<String> var4 = new LinkedHashSet<>();
 
       for (String var6 : var1) {
          try {
+            String var7 = fluidSelectorId(var6);
+            if (var7 != null) {
+               var4.add(var7);
+               continue;
+            }
+
             if (var6.startsWith("#")) {
-               boolean var7 = addBlockTag(var6.substring(1), var3);
-               if (!var7) {
+               boolean var8 = addBlockTag(var6.substring(1), var3);
+               if (!var8) {
                   switch (var6) {
                      case "#c:leaves":
                         addBlockTag("minecraft:leaves", var3);
@@ -1126,8 +1132,6 @@ public final class SnackCalculatorScreen extends Screen {
                      case "#minecraft:mossy_cobblestone":
                         addDirectBlock("minecraft:mossy_cobblestone", var3);
                         break;
-                     case "#minecraft:water":
-                        var4 = true;
                   }
                }
             } else {
@@ -1140,12 +1144,7 @@ public final class SnackCalculatorScreen extends Screen {
                      case "minecraft:light_grey_carpet":
                         addDirectBlock("minecraft:light_gray_carpet", var3);
                         break;
-                     case "minecraft:water":
-                     case "minecraft:flowing_water":
-                        var4 = true;
                   }
-               } else if (var6.equals("minecraft:water")) {
-                  var4 = true;
                }
             }
          } catch (Throwable var11) {
@@ -1169,15 +1168,33 @@ public final class SnackCalculatorScreen extends Screen {
          }
       }
 
-      if (var4) {
-         Item var16 = Registries.ITEM.get(Identifier.of("minecraft:water_bucket"));
-         ItemStack var19 = var16 == null ? ItemStack.EMPTY : new ItemStack(var16);
+      for (String var16 : var4) {
+         ItemStack var19 = registeredItemStack(var16 + "_bucket");
          if (!var19.isEmpty()) {
-            var13.putIfAbsent("minecraft:water_bucket", var19);
+            var13.putIfAbsent(var16 + "_bucket", var19);
          }
       }
 
       return List.copyOf(var13.values());
+   }
+
+   private static String fluidSelectorId(String var0) {
+      if (var0 == null || var0.isBlank()) {
+         return null;
+      }
+
+      String var1 = var0.trim().toLowerCase(Locale.ROOT);
+      if (var1.startsWith("#")) {
+         var1 = var1.substring(1);
+      }
+
+      int var2 = var1.indexOf(58);
+      String var4 = var2 >= 0 ? var1.substring(var2 + 1) : var1;
+      if (var4.startsWith("flowing_")) {
+         var4 = var4.substring("flowing_".length());
+      }
+
+      return var4.equals("water") || var4.equals("lava") ? "minecraft:" + var4 : null;
    }
 
    private List<ItemStack> fluidSourceTooltip(List<String> var1) {
@@ -2439,7 +2456,7 @@ public final class SnackCalculatorScreen extends Screen {
          }
 
          this.statusLine = var1
-            ? "Realistic habitats on - skipping odd land and water matches"
+            ? "Realistic habitats on - skipping odd land, water, and open-sky cave matches"
             : "Realistic habitats off - showing every location in the spawn files";
          this.resultsScrollOffset = 0;
          SessionDiagnostics.event(

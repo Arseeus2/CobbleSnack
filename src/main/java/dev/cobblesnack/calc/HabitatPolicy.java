@@ -9,7 +9,31 @@ public final class HabitatPolicy {
    }
 
    public static boolean allows(BiomeMatcher var0, SpawnEntry var1, boolean var2) {
-      return var2 && var0 != null && var1 != null ? rank(var0, var1) < 3 : true;
+      if (!var2 || var0 == null || var1 == null) {
+         return true;
+      }
+
+      return rank(var0, var1) < 3
+         && !hasGroundedOceanConflict(var0.isOceanBiome(), var1.context)
+         && !hasCaveSkyConflict(var0.isCaveLike(), var1);
+   }
+
+   static boolean hasGroundedOceanConflict(boolean var0, String var1) {
+      return var0 && "grounded".equals(normalizeContext(var1));
+   }
+
+   static boolean hasCaveSkyConflict(boolean var0, SpawnEntry var1) {
+      if (!var0 || var1 == null) {
+         return false;
+      }
+
+      for (SpawnCondition var3 : var1.conditions) {
+         if (Boolean.TRUE.equals(var3.canSeeSky) || var3.minSkyLight != null && var3.minSkyLight > 7) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public static int rank(BiomeMatcher var0, SpawnEntry var1) {
