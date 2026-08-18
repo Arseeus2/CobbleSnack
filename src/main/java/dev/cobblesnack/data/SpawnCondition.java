@@ -355,6 +355,10 @@ public final class SpawnCondition {
 
    private static String rangeText(Integer var0, Integer var1) {
       if (var0 != null && var1 != null) {
+         if (var0.equals(var1)) {
+            return String.valueOf(var0);
+         }
+
          return var0 + "-" + var1;
       } else {
          return var0 != null ? ">=" + var0 : "<=" + var1;
