@@ -13,14 +13,18 @@ public final class SpawnEnvironmentProfile {
    public final String context;
    private final SpawnEnvironmentProfile.Range skyLight;
    private final SpawnEnvironmentProfile.Range light;
+   private final SpawnEnvironmentProfile.Range x;
    private final SpawnEnvironmentProfile.Range y;
+   private final SpawnEnvironmentProfile.Range z;
    private final SpawnEnvironmentProfile.Range width;
    private final SpawnEnvironmentProfile.Range height;
    private final SpawnEnvironmentProfile.Range depth;
    private final Boolean canSeeSky;
    private final Boolean isRaining;
    private final Boolean isThundering;
+   private final Boolean isSlimeChunk;
    private final Boolean fluidIsSource;
+   private final Integer moonPhase;
    private final List<List<String>> fluidGroups;
    private final List<String> timeRanges;
 
@@ -33,57 +37,75 @@ public final class SpawnEnvironmentProfile {
       SpawnEnvironmentProfile.MutableRange var5 = new SpawnEnvironmentProfile.MutableRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
       SpawnEnvironmentProfile.MutableRange var6 = new SpawnEnvironmentProfile.MutableRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
       SpawnEnvironmentProfile.MutableRange var7 = new SpawnEnvironmentProfile.MutableRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
-      Boolean var8 = null;
-      Boolean var9 = null;
+      SpawnEnvironmentProfile.MutableRange var8 = new SpawnEnvironmentProfile.MutableRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
+      SpawnEnvironmentProfile.MutableRange var9 = new SpawnEnvironmentProfile.MutableRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
       Boolean var10 = null;
       Boolean var11 = null;
-      List<List<String>> var12 = new ArrayList<>();
-      List<String> var13 = new ArrayList<>();
+      Boolean var12 = null;
+      Boolean var13 = null;
+      Boolean var14 = null;
+      Integer var15 = null;
+      List<List<String>> var16 = new ArrayList<>();
+      List<String> var17 = new ArrayList<>();
 
-      for (SpawnCondition var15 : var1.conditions) {
-         var2.apply(var15.minSkyLight, var15.maxSkyLight);
-         var3.apply(var15.minLight, var15.maxLight);
-         var4.apply(var15.minY, var15.maxY);
-         var5.apply(var15.minWidth, var15.maxWidth);
-         var6.apply(var15.minHeight, var15.maxHeight);
-         var7.apply(var15.minDepth, var15.maxDepth);
-         if (var15.canSeeSky != null) {
-            var8 = mergeBoolean(var8, var15.canSeeSky);
+      for (SpawnCondition var19 : var1.conditions) {
+         var2.apply(var19.minSkyLight, var19.maxSkyLight);
+         var3.apply(var19.minLight, var19.maxLight);
+         var4.apply(var19.minY, var19.maxY);
+         var5.apply(var19.minWidth, var19.maxWidth);
+         var6.apply(var19.minHeight, var19.maxHeight);
+         var7.apply(var19.minDepth, var19.maxDepth);
+         var8.apply(var19.minX, var19.maxX);
+         var9.apply(var19.minZ, var19.maxZ);
+         if (var19.canSeeSky != null) {
+            var10 = mergeBoolean(var10, var19.canSeeSky);
          }
 
-         if (var15.isRaining != null) {
-            var9 = mergeBoolean(var9, var15.isRaining);
+         if (var19.isRaining != null) {
+            var11 = mergeBoolean(var11, var19.isRaining);
          }
 
-         if (var15.isThundering != null) {
-            var10 = mergeBoolean(var10, var15.isThundering);
+         if (var19.isThundering != null) {
+            var12 = mergeBoolean(var12, var19.isThundering);
          }
 
-         if (var15.fluidIsSource != null) {
-            var11 = mergeBoolean(var11, var15.fluidIsSource);
+         if (var19.isSlimeChunk != null) {
+            var13 = mergeBoolean(var13, var19.isSlimeChunk);
          }
 
-         if (!var15.fluid.isEmpty()) {
-            var12.add(var15.fluid);
+         if (var19.fluidIsSource != null) {
+            var14 = mergeBoolean(var14, var19.fluidIsSource);
          }
 
-         if (var15.timeRange != null && !var15.timeRange.isBlank()) {
-            var13.add(var15.timeRange);
+         if (var15 == null && var19.moonPhase != null) {
+            var15 = var19.moonPhase;
+         }
+
+         if (!var19.fluid.isEmpty()) {
+            var16.add(var19.fluid);
+         }
+
+         if (var19.timeRange != null && !var19.timeRange.isBlank()) {
+            var17.add(var19.timeRange);
          }
       }
 
       this.skyLight = var2.toRange();
       this.light = var3.toRange();
+      this.x = var8.toRange();
       this.y = var4.toRange();
+      this.z = var9.toRange();
       this.width = var5.toRange();
       this.height = var6.toRange();
       this.depth = var7.toRange();
-      this.canSeeSky = var8;
-      this.isRaining = var9;
-      this.isThundering = var10;
-      this.fluidIsSource = var11;
-      this.fluidGroups = List.copyOf(var12);
-      this.timeRanges = List.copyOf(var13);
+      this.canSeeSky = var10;
+      this.isRaining = var11;
+      this.isThundering = var12;
+      this.isSlimeChunk = var13;
+      this.fluidIsSource = var14;
+      this.moonPhase = var15;
+      this.fluidGroups = List.copyOf(var16);
+      this.timeRanges = List.copyOf(var17);
    }
 
    public static SpawnEnvironmentProfile fromTarget(SpawnEntry var0) {
@@ -109,6 +131,12 @@ public final class SpawnEnvironmentProfile {
          }
       }
 
+      for (SpawnCondition var5 : var1.antiConditions) {
+         if (var5.hasNonBiomeConstraint() && this.definitelySatisfies(var5)) {
+            return false;
+         }
+      }
+
       return true;
    }
 
@@ -121,13 +149,21 @@ public final class SpawnEnvironmentProfile {
          return false;
       } else if (this.isThundering != null && var1.isThundering != null && !this.isThundering.equals(var1.isThundering)) {
          return false;
+      } else if (this.isSlimeChunk != null && var1.isSlimeChunk != null && !this.isSlimeChunk.equals(var1.isSlimeChunk)) {
+         return false;
+      } else if (this.moonPhase != null && var1.moonPhase != null && !this.moonPhase.equals(var1.moonPhase)) {
+         return false;
       } else if (this.fluidIsSource != null && var1.fluidIsSource != null && !this.fluidIsSource.equals(var1.fluidIsSource)) {
          return false;
       } else if (!this.skyLight.overlaps(var1.minSkyLight, var1.maxSkyLight)) {
          return false;
       } else if (!this.light.overlaps(var1.minLight, var1.maxLight)) {
          return false;
+      } else if (!this.x.overlaps(var1.minX, var1.maxX)) {
+         return false;
       } else if (!this.y.overlaps(var1.minY, var1.maxY)) {
+         return false;
+      } else if (!this.z.overlaps(var1.minZ, var1.maxZ)) {
          return false;
       } else if (!this.width.overlaps(var1.minWidth, var1.maxWidth)) {
          return false;
@@ -151,6 +187,8 @@ public final class SpawnEnvironmentProfile {
          || !var1.neededBaseBlocks.isEmpty()
          || !var1.neededNearbyBlocks.isEmpty()
          || !var1.labels.isEmpty()
+         || var1.labelMode != null
+         || var1.hasFishingRequirement()
          || !var1.unknownKeys.isEmpty()) {
          return false;
       } else if (var1.canSeeSky != null && !Objects.equals(this.canSeeSky, var1.canSeeSky)) {
@@ -159,13 +197,21 @@ public final class SpawnEnvironmentProfile {
          return false;
       } else if (var1.isThundering != null && !Objects.equals(this.isThundering, var1.isThundering)) {
          return false;
+      } else if (var1.isSlimeChunk != null && !Objects.equals(this.isSlimeChunk, var1.isSlimeChunk)) {
+         return false;
+      } else if (var1.moonPhase != null && !Objects.equals(this.moonPhase, var1.moonPhase)) {
+         return false;
       } else if (var1.fluidIsSource != null && !Objects.equals(this.fluidIsSource, var1.fluidIsSource)) {
          return false;
       } else if (!this.skyLight.isWithin(var1.minSkyLight, var1.maxSkyLight)) {
          return false;
       } else if (!this.light.isWithin(var1.minLight, var1.maxLight)) {
          return false;
+      } else if (!this.x.isWithin(var1.minX, var1.maxX)) {
+         return false;
       } else if (!this.y.isWithin(var1.minY, var1.maxY)) {
+         return false;
+      } else if (!this.z.isWithin(var1.minZ, var1.maxZ)) {
          return false;
       } else if (!this.width.isWithin(var1.minWidth, var1.maxWidth)) {
          return false;

@@ -939,6 +939,10 @@ public final class SnackCalculatorScreen extends Screen {
                      + var5.conditions.stream().mapToInt(var0 -> var0.neededBaseBlocks.size()).sum()
                      + " nearbySelectors="
                      + var5.conditions.stream().mapToInt(var0 -> var0.neededNearbyBlocks.size()).sum()
+                     + " betterChance="
+                     + chanceModifierOutput(var5, true)
+                     + " lowerChance="
+                     + chanceModifierOutput(var5, false)
                );
                return this.routeOutputLine(var5);
             }
@@ -958,7 +962,7 @@ public final class SnackCalculatorScreen extends Screen {
 
    private String routeOutputLine(SpawnEntry var1, boolean var2) {
       if (var1 == null) {
-         return "ROUTE|No extra conditions|||";
+         return "ROUTE|No extra conditions|||||";
       }
 
       LinkedHashSet var3 = new LinkedHashSet();
@@ -988,13 +992,108 @@ public final class SnackCalculatorScreen extends Screen {
          }
       }
 
-      List<String> var12 = StructureSelectorPolicy.displaySelectors(List.of(var1));
-      if (!var12.isEmpty()) {
-         var3.add("Structure: " + StructureSelectorPolicy.displaySummary(var12));
+      for (SpawnCondition var12 : var1.antiConditions) {
+         for (String var14 : var12.conciseAvoidSummaryParts()) {
+            var3.add(friendlyRequirement(var14));
+         }
+      }
+
+      List<String> var15 = StructureSelectorPolicy.displaySelectors(List.of(var1));
+      if (!var15.isEmpty()) {
+         var3.add("Structure: " + StructureSelectorPolicy.displaySummary(var15));
       }
 
       String var13 = var3.isEmpty() ? "No extra conditions" : String.join(" • ", var3);
-      return "ROUTE|" + var13 + "|" + String.join(",", var4) + "|" + String.join(",", var5) + "|" + String.join(",", var6);
+      return "ROUTE|"
+         + var13
+         + "|"
+         + String.join(",", var4)
+         + "|"
+         + String.join(",", var5)
+         + "|"
+         + String.join(",", var6)
+         + "|"
+         + chanceModifierOutput(var1, true)
+         + "|"
+         + chanceModifierOutput(var1, false);
+   }
+
+   private static String chanceModifierOutput(SpawnEntry var0, boolean var1) {
+      LinkedHashSet<String> var2 = new LinkedHashSet<>();
+
+      for (SpawnEntry.WeightMultiplier var4 : var0.weightMultipliers) {
+         boolean var5 = var4.multiplier() > 1.0;
+         boolean var6 = var4.multiplier() < 1.0;
+         if ((var1 && var5) || (!var1 && var6)) {
+            LinkedHashSet<String> var7 = new LinkedHashSet<>();
+
+            for (SpawnCondition var9 : var4.conditions()) {
+               for (String var11 : var9.conciseSummaryParts()) {
+                  String var12 = friendlyChanceModifierRequirement(var11);
+                  if (!var12.isBlank()) {
+                     var7.add(var12);
+                  }
+               }
+            }
+
+            for (SpawnCondition var14 : var4.antiConditions()) {
+               for (String var16 : var14.conciseSummaryParts()) {
+                  String var17 = negatedChanceModifierRequirement(var16);
+                  if (!var17.isBlank()) {
+                     var7.add(var17);
+                  }
+               }
+            }
+
+            if (!var7.isEmpty()) {
+               var2.add(String.join(" • ", var7) + " (x" + chanceMultiplierText(var4.multiplier()) + ")");
+            }
+         }
+      }
+
+      return String.join(" • ", var2);
+   }
+
+   private static String friendlyChanceModifierRequirement(String var0) {
+      if (var0 == null || var0.isBlank()) {
+         return "";
+      } else if (var0.startsWith("Moon: ")) {
+         return var0.substring("Moon: ".length()) + " moon";
+      } else if (var0.startsWith("Time: ")) {
+         return titleWords(var0.substring("Time: ".length()));
+      } else {
+         return var0;
+      }
+   }
+
+   private static String negatedChanceModifierRequirement(String var0) {
+      String var1 = friendlyChanceModifierRequirement(var0);
+      if (var1.isBlank()) {
+         return "";
+      } else if (var1.equals("Rain")) {
+         return "No rain";
+      } else if (var1.equals("No rain")) {
+         return "Rain";
+      } else if (var1.equals("Thunder")) {
+         return "No thunder";
+      } else if (var1.equals("No thunder")) {
+         return "Thunder";
+      } else if (var1.equals("Sky visible")) {
+         return "No sky visibility";
+      } else if (var1.equals("No sky visibility")) {
+         return "Sky visible";
+      } else if (var1.equals("Slime chunk")) {
+         return "Not a slime chunk";
+      } else if (var1.equals("Not a slime chunk")) {
+         return "Slime chunk";
+      } else {
+         return "Not " + var1;
+      }
+   }
+
+   private static String chanceMultiplierText(double var0) {
+      double var2 = Math.rint(var0);
+      return Math.abs(var0 - var2) < 1.0E-6 ? String.valueOf((long)var2) : String.format(Locale.ROOT, "%.2f", var0).replaceAll("0+$", "").replaceAll("\\.$", "");
    }
 
    private List<SpawnEntry> selectedStructureFallbackRoutes(boolean var1) {
@@ -1466,6 +1565,30 @@ public final class SnackCalculatorScreen extends Screen {
                   List var15 = selectorsFromPart(part(var6, 3));
                   if (!var15.isEmpty()) {
                      this.addResultWrapped(var2, "Near: " + friendlySelectorSummary(var15), 12114175, var1, 1.0F, this.selectorTooltip(var15, false));
+                  }
+
+                  String var20 = part(var6, 5);
+                  if (!var20.isBlank()) {
+                     this.addResultWrappedTextTooltip(
+                        var2,
+                        "Better chance: " + var20,
+                        8454016,
+                        var1,
+                        1.0F,
+                        List.of("This route is more common when these rules are true.", "The shown odds do not assume this boost.")
+                     );
+                  }
+
+                  String var21 = part(var6, 6);
+                  if (!var21.isBlank()) {
+                     this.addResultWrappedTextTooltip(
+                        var2,
+                        "Lower chance: " + var21,
+                        16755200,
+                        var1,
+                        1.0F,
+                        List.of("This route is less common when these rules are true.")
+                     );
                   }
                   break;
                case "FORMNOTE":

@@ -150,6 +150,10 @@ public final class SpawnEntry {
          var1.addAll(var5.conciseSummaryParts());
       }
 
+      for (SpawnCondition var7 : this.antiConditions) {
+         var1.addAll(var7.conciseAvoidSummaryParts());
+      }
+
       return var1;
    }
 

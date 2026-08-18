@@ -613,7 +613,7 @@ public final class DataIndex {
                var0.parsePreset(var9.getKey(), var10, var7);
                break;
             case "spawn_rules":
-               if (getBoolean(var10.json, "enabled", true) && var0.modsSatisfied(var10.json)) {
+               if (isEnabled(var10.json) && var0.modsSatisfied(var10.json)) {
                   var0.spawnRuleFileCount++;
                } else {
                   var0.inactiveSpawnRuleFileCount++;
@@ -1138,7 +1138,7 @@ public final class DataIndex {
       var5 = var5.substring("spawn_detail_presets/".length()).replaceFirst("\\.json$", "");
       String var6 = var2.namespace + ":" + var5;
       DataIndex.SpawnPreset var7 = new DataIndex.SpawnPreset(
-         getString(var4, "context", null), conditionList(var4.get("condition")), conditionList(var4.get("anticondition"))
+         getString(var4, "context", null), conditionList(var4, "condition", "conditions"), conditionList(var4, "anticondition", "antiConditions")
       );
       var3.put(var6, var7);
       if (var2.namespace.equals("cobblemon")) {
@@ -1148,7 +1148,7 @@ public final class DataIndex {
 
    private void parseSpawnPool(DataIndex.ResourceJson var1, Map<String, DataIndex.SpawnPreset> var2) {
       JsonObject var3 = var1.json;
-      if (getBoolean(var3, "enabled", true) && this.modsSatisfied(var3)) {
+      if (isEnabled(var3) && this.modsSatisfied(var3)) {
          JsonElement var22 = var3.get("spawns");
          if (var22 != null && var22.isJsonArray()) {
             for (JsonElement var6 : var22.getAsJsonArray()) {
@@ -1181,9 +1181,10 @@ public final class DataIndex {
                         }
                      }
 
-                     var16.addAll(conditionList(var8.get("condition")));
-                     var17.addAll(conditionList(var8.get("anticondition")));
-                     List var24 = parseWeightMultipliers(var8.get("weightMultiplier"));
+                     var16.addAll(conditionList(var8, "condition", "conditions"));
+                     var17.addAll(conditionList(var8, "anticondition", "antiConditions"));
+                     var16.addAll(directConditions(var8));
+                     List var24 = parseWeightMultipliers(var8);
                      this.spawns.add(new SpawnEntry(var14, var7, var10, var15, var11, var12, var16, var17, var24, var1.resourceName()));
                   } else {
                      this.excludedSpawnRouteCount++;
@@ -1226,9 +1227,27 @@ public final class DataIndex {
       return true;
    }
 
-   private static List<SpawnEntry.WeightMultiplier> parseWeightMultipliers(JsonElement var0) {
+   static boolean isEnabled(JsonObject var0) {
+      if (var0 != null && var0.has("enabled")) {
+         return getBoolean(var0, "enabled", true);
+      } else {
+         return var0 == null || !var0.has("enable") || getBoolean(var0, "enable", true);
+      }
+   }
+
+   static List<SpawnEntry.WeightMultiplier> parseWeightMultipliers(JsonObject var0) {
+      if (var0 == null) {
+         return List.of();
+      }
+
+      ArrayList<SpawnEntry.WeightMultiplier> var1 = new ArrayList<>();
+      appendWeightMultipliers(var0.get("weightMultiplier"), var1);
+      appendWeightMultipliers(var0.get("weightMultipliers"), var1);
+      return List.copyOf(var1);
+   }
+
+   private static void appendWeightMultipliers(JsonElement var0, List<SpawnEntry.WeightMultiplier> var1) {
       if (var0 != null && !var0.isJsonNull()) {
-         ArrayList var1 = new ArrayList();
          if (var0.isJsonArray()) {
             for (JsonElement var3 : var0.getAsJsonArray()) {
                parseOneMultiplier(var3, var1);
@@ -1237,19 +1256,44 @@ public final class DataIndex {
             parseOneMultiplier(var0, var1);
          }
 
-         return var1;
-      } else {
-         return List.of();
       }
    }
 
    private static void parseOneMultiplier(JsonElement var0, List<SpawnEntry.WeightMultiplier> var1) {
       if (var0.isJsonObject()) {
          JsonObject var2 = var0.getAsJsonObject();
+         ArrayList<SpawnCondition> var3 = new ArrayList<>(conditionList(var2, "condition", "conditions"));
+         var3.addAll(directConditions(var2));
          var1.add(
-            new SpawnEntry.WeightMultiplier(getDouble(var2, "multiplier", 1.0), conditionList(var2.get("condition")), conditionList(var2.get("anticondition")))
+            new SpawnEntry.WeightMultiplier(getDouble(var2, "multiplier", 1.0), var3, conditionList(var2, "anticondition", "antiConditions"))
          );
       }
+   }
+
+   static List<SpawnCondition> directConditions(JsonObject var0) {
+      if (var0 == null) {
+         return List.of();
+      }
+
+      JsonObject var1 = new JsonObject();
+      for (String var3 : var0.keySet()) {
+         if (SpawnCondition.isKnownKey(var3)) {
+            var1.add(var3, var0.get(var3));
+         }
+      }
+
+      return var1.isEmpty() ? List.of() : conditionList(var1);
+   }
+
+   private static List<SpawnCondition> conditionList(JsonObject var0, String var1, String var2) {
+      if (var0 == null) {
+         return List.of();
+      }
+
+      ArrayList<SpawnCondition> var3 = new ArrayList<>();
+      var3.addAll(conditionList(var0.get(var1)));
+      var3.addAll(conditionList(var0.get(var2)));
+      return List.copyOf(var3);
    }
 
    private static List<SpawnCondition> conditionList(JsonElement var0) {

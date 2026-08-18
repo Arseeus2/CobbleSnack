@@ -30,8 +30,8 @@ import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 public final class DiskCacheStore {
-   private static final int SCHEMA = 3;
-   private static final String CACHE_VERSION = "1.0.8";
+   private static final int SCHEMA = 4;
+   private static final String CACHE_VERSION = "1.0.4";
    private static final Object IO_LOCK = new Object();
    private static final String METADATA = "metadata.json";
    private static final String SPECIES = "species.json";
@@ -155,8 +155,8 @@ public final class DiskCacheStore {
                Map var6 = speciesDocument(var0);
                Map var7 = spawnsDocument(var0);
                LinkedHashMap var8 = new LinkedHashMap();
-               var8.put("schema", 3);
-               var8.put("cobblesnackVersion", "1.0.8");
+               var8.put("schema", SCHEMA);
+               var8.put("cobblesnackVersion", CACHE_VERSION);
                var8.put("createdUtc", Instant.now().toString());
                var8.put("sourceFingerprint", sourceFingerprint());
                var8.put("speciesCount", var0.uniqueSpecies().size());
@@ -209,7 +209,7 @@ public final class DiskCacheStore {
             if (!(parseJson(Files.readString(var1, StandardCharsets.UTF_8), Map.class) instanceof Map var3)) {
                return false;
             } else {
-               if (intValue(var3.get("schema"), -1) != 3) {
+               if (intValue(var3.get("schema"), -1) != SCHEMA) {
                   return false;
                }
 
@@ -467,6 +467,10 @@ public final class DiskCacheStore {
       putIfNotNull(var1, "maxDepth", var0.maxDepth);
       putIfNotNull(var1, "fluidIsSource", var0.fluidIsSource);
       putIfNotEmpty(var1, "fluid", var0.fluid);
+      putIfNotNull(var1, "minLureLevel", var0.minLureLevel);
+      putIfNotNull(var1, "maxLureLevel", var0.maxLureLevel);
+      putIfNotEmpty(var1, "bobber", var0.bobbers);
+      putIfNotEmpty(var1, "bait", var0.bait);
       putIfNotEmpty(var1, "rodType", var0.rodTypes);
       if (!var0.unknownKeys.isEmpty()) {
          var1.put("_unknownKeys", var0.unknownKeys);
@@ -540,7 +544,7 @@ public final class DiskCacheStore {
       try {
          MessageDigest var0 = MessageDigest.getInstance("SHA-256");
          List<String> var1 = new ArrayList<>();
-         var1.add("schema=3");
+         var1.add("schema=" + SCHEMA);
          var1.addAll(installedModFingerprints());
          Path var2 = gameDir();
          addContentFingerprint(var1, var2, var2.resolve("options.txt"));
@@ -557,7 +561,7 @@ public final class DiskCacheStore {
 
          return HexFormat.of().formatHex(var0.digest());
       } catch (Throwable var5) {
-         return "fallback-1.0.8-schema-3";
+         return "fallback-" + CACHE_VERSION + "-schema-" + SCHEMA;
       }
    }
 

@@ -31,6 +31,7 @@ public final class DataAuditDiagnostics {
       Map<String, List<SpawnEntry>> var4 = new LinkedHashMap<>();
       int var5 = 0;
       int var6 = 0;
+      DataAuditDiagnostics.MetadataCoverage var7 = new DataAuditDiagnostics.MetadataCoverage();
 
       for (SpawnEntry var8 : var0.spawns()) {
          SpeciesInfo var9 = var0.findSpecies(var8.speciesKey);
@@ -43,9 +44,21 @@ public final class DataAuditDiagnostics {
          if (var9 == null) {
             var6++;
          }
+
+         var7.accept(var8.conditions);
+         var7.accept(var8.antiConditions);
+         if (!var8.weightMultipliers.isEmpty()) {
+            var7.routesWithMultipliers++;
+         }
+
+         for (SpawnEntry.WeightMultiplier var12 : var8.weightMultipliers) {
+            var7.multiplierRules++;
+            var7.accept(var12.conditions());
+            var7.accept(var12.antiConditions());
+         }
       }
 
-      var1.add("BEGIN schema=3 meaning=installed-Pokemon-forms-and-world-spawn-routes");
+      var1.add("BEGIN schema=4 meaning=installed-Pokemon-forms-and-world-spawn-routes");
       var1.add(
          "SUMMARY species="
             + var2.size()
@@ -63,6 +76,27 @@ public final class DataAuditDiagnostics {
             + var5
             + " routesMissingSpecies="
             + var6
+      );
+      var1.add(
+         "FIELD-COVERAGE conditionObjects="
+            + var7.conditionObjects
+            + " routesWithMultipliers="
+            + var7.routesWithMultipliers
+            + " multiplierRules="
+            + var7.multiplierRules
+            + " moonPhase="
+            + var7.moonPhase
+            + " slimeChunk="
+            + var7.slimeChunk
+            + " coordinateRange="
+            + var7.coordinateRange
+            + " labels="
+            + var7.labels
+            + " fishingMetadata="
+            + var7.fishingMetadata
+      );
+      var1.add(
+         "FIELD-STATUS parsed=all listed route requirements; cautious=labels/dimensions/structures/blocks require a real location; unsupported means only unknown field names, not recognized fields."
       );
       var1.add(
          "CHANCE-MODEL route weights below are source data; the percentage shown in results is conditional on the chosen biome, conditions, rarity bucket and seasonings. It is not a guarantee that any Pokemon spawns."
@@ -215,5 +249,43 @@ public final class DataAuditDiagnostics {
 
    private static String clean(Object var0) {
       return var0 == null ? "none" : String.valueOf(var0).replace('\n', ' ').replace('\r', ' ').replace('|', '/');
+   }
+
+   private static final class MetadataCoverage {
+      int conditionObjects;
+      int routesWithMultipliers;
+      int multiplierRules;
+      int moonPhase;
+      int slimeChunk;
+      int coordinateRange;
+      int labels;
+      int fishingMetadata;
+
+      void accept(List<SpawnCondition> var1) {
+         for (SpawnCondition var3 : var1) {
+            if (var3 != null) {
+               this.conditionObjects++;
+               if (var3.moonPhase != null) {
+                  this.moonPhase++;
+               }
+
+               if (var3.isSlimeChunk != null) {
+                  this.slimeChunk++;
+               }
+
+               if (var3.minX != null || var3.maxX != null || var3.minZ != null || var3.maxZ != null) {
+                  this.coordinateRange++;
+               }
+
+               if (!var3.labels.isEmpty() || var3.labelMode != null) {
+                  this.labels++;
+               }
+
+               if (var3.hasFishingRequirement()) {
+                  this.fishingMetadata++;
+               }
+            }
+         }
+      }
    }
 }

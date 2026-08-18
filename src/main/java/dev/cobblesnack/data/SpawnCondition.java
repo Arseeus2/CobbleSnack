@@ -80,6 +80,10 @@ public final class SpawnCondition {
    public final Integer maxDepth;
    public final Boolean fluidIsSource;
    public final List<String> fluid;
+   public final Integer minLureLevel;
+   public final Integer maxLureLevel;
+   public final List<String> bobbers;
+   public final List<String> bait;
    public final List<String> rodTypes;
    public final Set<String> unknownKeys;
 
@@ -115,6 +119,10 @@ public final class SpawnCondition {
       this.maxDepth = integer(var1, "maxDepth");
       this.fluidIsSource = bool(var1, "fluidIsSource");
       this.fluid = stringList(var1.get("fluid"));
+      this.minLureLevel = integer(var1, "minLureLevel");
+      this.maxLureLevel = integer(var1, "maxLureLevel");
+      this.bobbers = stringList(var1.get("bobber"));
+      this.bait = stringList(var1.get("bait"));
       this.rodTypes = stringList(var1.get("rodType"));
       LinkedHashSet var2 = new LinkedHashSet();
 
@@ -129,6 +137,10 @@ public final class SpawnCondition {
 
    public static SpawnCondition from(JsonObject var0) {
       return var0 == null ? null : new SpawnCondition(var0);
+   }
+
+   public static boolean isKnownKey(String var0) {
+      return var0 != null && KNOWN_KEYS.contains(var0);
    }
 
    public boolean hasBiomeConstraint() {
@@ -166,6 +178,10 @@ public final class SpawnCondition {
          || this.maxDepth != null
          || this.fluidIsSource != null
          || !this.fluid.isEmpty()
+         || this.minLureLevel != null
+         || this.maxLureLevel != null
+         || !this.bobbers.isEmpty()
+         || !this.bait.isEmpty()
          || !this.rodTypes.isEmpty()
          || !this.unknownKeys.isEmpty();
    }
@@ -193,7 +209,30 @@ public final class SpawnCondition {
          || this.maxDepth != null
          || this.fluidIsSource != null
          || !this.fluid.isEmpty()
+         || this.minLureLevel != null
+         || this.maxLureLevel != null
+         || !this.bobbers.isEmpty()
+         || !this.bait.isEmpty()
          || !this.rodTypes.isEmpty();
+   }
+
+   /**
+    * These fields describe a real world state that a biome name cannot prove on its own.
+    * They are retained and shown, but calculations should not assume they are automatically true.
+    */
+   public boolean hasSpecialWorldRequirement() {
+      return this.moonPhase != null
+         || this.isSlimeChunk != null
+         || this.minX != null
+         || this.maxX != null
+         || this.minZ != null
+         || this.maxZ != null
+         || !this.labels.isEmpty()
+         || this.labelMode != null;
+   }
+
+   public boolean hasFishingRequirement() {
+      return this.minLureLevel != null || this.maxLureLevel != null || !this.bobbers.isEmpty() || !this.bait.isEmpty() || !this.rodTypes.isEmpty();
    }
 
    public List<String> conciseSummaryParts() {
@@ -202,16 +241,26 @@ public final class SpawnCondition {
          var1.add(this.canSeeSky ? "Sky visible" : "No sky visibility");
       }
 
+      if (this.moonPhase != null) {
+         var1.add("Moon: " + friendlyMoonPhase(this.moonPhase));
+      }
+
       addRange(var1, "Sky light", this.minSkyLight, this.maxSkyLight);
       addRange(var1, "Light", this.minLight, this.maxLight);
+      addRange(var1, "X", this.minX, this.maxX);
       addRange(var1, "Y", this.minY, this.maxY);
+      addRange(var1, "Z", this.minZ, this.maxZ);
       if (this.timeRange != null && !this.timeRange.isBlank()) {
          var1.add("Time: " + this.timeRange);
       }
 
       if (Boolean.TRUE.equals(this.isThundering)) {
          var1.add("Thunder");
-      } else if (Boolean.TRUE.equals(this.isRaining)) {
+      } else if (Boolean.FALSE.equals(this.isThundering)) {
+         var1.add("No thunder");
+      }
+
+      if (Boolean.TRUE.equals(this.isRaining)) {
          var1.add("Rain");
       } else if (Boolean.FALSE.equals(this.isRaining)) {
          var1.add("No rain");
@@ -233,8 +282,30 @@ public final class SpawnCondition {
          var1.add("Fluid: " + shortList(this.fluid));
       }
 
+      if (Boolean.TRUE.equals(this.isSlimeChunk)) {
+         var1.add("Slime chunk");
+      } else if (Boolean.FALSE.equals(this.isSlimeChunk)) {
+         var1.add("Not a slime chunk");
+      }
+
+      if (!this.labels.isEmpty()) {
+         var1.add("Special area: " + shortList(this.labels));
+      }
+
+      addRange(var1, "Space width", this.minWidth, this.maxWidth);
+      addRange(var1, "Space height", this.minHeight, this.maxHeight);
+
       if (!this.rodTypes.isEmpty()) {
          var1.add("Needs a " + this.rodTypes.stream().map(SpawnCondition::friendlyItemName).collect(Collectors.joining(" or ")));
+      }
+
+      if (!this.bait.isEmpty()) {
+         var1.add("Needs bait: " + this.bait.stream().map(SpawnCondition::friendlyItemName).collect(Collectors.joining(" or ")));
+      }
+
+      addRange(var1, "Lure level", this.minLureLevel, this.maxLureLevel);
+      if (!this.bobbers.isEmpty()) {
+         var1.add("Needs bobber: " + this.bobbers.stream().map(SpawnCondition::friendlyItemName).collect(Collectors.joining(" or ")));
       }
 
       addRange(var1, "Depth", this.minDepth, this.maxDepth);
@@ -249,15 +320,44 @@ public final class SpawnCondition {
       return var1;
    }
 
+   public List<String> conciseAvoidSummaryParts() {
+      ArrayList<String> var1 = new ArrayList<>();
+      if (Boolean.TRUE.equals(this.isSlimeChunk)) {
+         var1.add("Not a slime chunk");
+      } else if (Boolean.FALSE.equals(this.isSlimeChunk)) {
+         var1.add("Slime chunk only");
+      }
+
+      if (this.moonPhase != null) {
+         var1.add("Avoid moon: " + friendlyMoonPhase(this.moonPhase));
+      }
+
+      if (this.minX != null || this.maxX != null) {
+         var1.add("Avoid X " + rangeText(this.minX, this.maxX));
+      }
+
+      if (this.minZ != null || this.maxZ != null) {
+         var1.add("Avoid Z " + rangeText(this.minZ, this.maxZ));
+      }
+
+      if (!this.labels.isEmpty()) {
+         var1.add("Avoid special area: " + shortList(this.labels));
+      }
+
+      return var1;
+   }
+
    private static void addRange(List<String> var0, String var1, Integer var2, Integer var3) {
       if (var2 != null || var3 != null) {
-         if (var2 != null && var3 != null) {
-            var0.add(var1 + " " + var2 + "-" + var3);
-         } else if (var2 != null) {
-            var0.add(var1 + " >=" + var2);
-         } else {
-            var0.add(var1 + " <=" + var3);
-         }
+         var0.add(var1 + " " + rangeText(var2, var3));
+      }
+   }
+
+   private static String rangeText(Integer var0, Integer var1) {
+      if (var0 != null && var1 != null) {
+         return var0 + "-" + var1;
+      } else {
+         return var0 != null ? ">=" + var0 : "<=" + var1;
       }
    }
 
@@ -295,6 +395,19 @@ public final class SpawnCondition {
       } else {
          return "special rod";
       }
+   }
+
+   private static String friendlyMoonPhase(int var0) {
+      return switch (Math.floorMod(var0, 8)) {
+         case 0 -> "Full";
+         case 1 -> "Waning gibbous";
+         case 2 -> "Last quarter";
+         case 3 -> "Waning crescent";
+         case 4 -> "New";
+         case 5 -> "Waxing crescent";
+         case 6 -> "First quarter";
+         default -> "Waxing gibbous";
+      };
    }
 
    private static List<String> stringList(JsonElement var0) {
